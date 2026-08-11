@@ -113,9 +113,14 @@ class UPR_GitHub_Updater {
 	 */
 	private function get_latest_release() {
 		$cache_key = 'upr_github_release_info';
-		$cached    = get_transient( $cache_key );
-		if ( false !== $cached ) {
-			return $cached;
+
+		if ( isset( $_GET['force-check'] ) || ( isset( $GLOBALS['pagenow'] ) && 'update-core.php' === $GLOBALS['pagenow'] ) ) {
+			delete_transient( $cache_key );
+		} else {
+			$cached = get_transient( $cache_key );
+			if ( false !== $cached ) {
+				return $cached;
+			}
 		}
 
 		$url      = 'https://api.github.com/repos/' . $this->github_repo . '/releases/latest';
@@ -138,7 +143,7 @@ class UPR_GitHub_Updater {
 			return false;
 		}
 
-		set_transient( $cache_key, $body, 6 * HOUR_IN_SECONDS );
+		set_transient( $cache_key, $body, 1 * HOUR_IN_SECONDS );
 		return $body;
 	}
 }
