@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Native GitHub Auto-Updater for WordPress Plugin
+ * Native GitHub Auto-Updater for WordPress Plugin (v2.0.2)
  * Enables 1-click update directly from wp-admin/plugins.php via GitHub Releases or Tags
  */
 class UPR_GitHub_Updater {
@@ -22,6 +22,31 @@ class UPR_GitHub_Updater {
 		add_filter( 'site_transient_update_plugins', array( $this, 'check_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_popup' ), 10, 3 );
 		add_filter( 'upgrader_post_install', array( $this, 'post_install' ), 10, 3 );
+		add_filter( 'plugin_row_meta', array( $this, 'add_check_update_link' ), 10, 2 );
+		add_action( 'admin_init', array( $this, 'handle_force_check' ) );
+	}
+
+	/**
+	 * Add "Check for updates" link in plugin row meta
+	 */
+	public function add_check_update_link( $links, $file ) {
+		if ( $file === $this->plugin_slug ) {
+			$url = wp_nonce_url( admin_url( 'plugins.php?upr_check_update=1' ), 'upr_check_update_nonce' );
+			$links[] = '<a href="' . esc_url( $url ) . '" style="color:#2563eb;font-weight:600;">🔄 Check for updates</a>';
+		}
+		return $links;
+	}
+
+	/**
+	 * Handle manual force update check trigger
+	 */
+	public function handle_force_check() {
+		if ( isset( $_GET['upr_check_update'] ) && check_admin_referer( 'upr_check_update_nonce' ) ) {
+			delete_transient( 'upr_github_release_info' );
+			delete_site_transient( 'update_plugins' );
+			wp_safe_redirect( admin_url( 'plugins.php?upr_checked=1' ) );
+			exit;
+		}
 	}
 
 	/**
@@ -97,9 +122,9 @@ class UPR_GitHub_Updater {
 		global $wp_filesystem;
 
 		$proper_folder = UPR_PLUGIN_DIR;
-		$install_directory = $result['destination'];
+		$install_directory = isset( $result['destination'] ) ? $result['destination'] : '';
 
-		if ( $install_directory !== $proper_folder ) {
+		if ( ! empty( $install_directory ) && $install_directory !== $proper_folder ) {
 			$wp_filesystem->move( $install_directory, $proper_folder );
 			$result['destination'] = $proper_folder;
 		}
@@ -113,7 +138,7 @@ class UPR_GitHub_Updater {
 	private function get_latest_release() {
 		$cache_key = 'upr_github_release_info';
 
-		if ( isset( $_GET['force-check'] ) || ( isset( $GLOBALS['pagenow'] ) && 'update-core.php' === $GLOBALS['pagenow'] ) ) {
+		if ( isset( $_GET['upr_check_update'] ) || isset( $_GET['force-check'] ) || ( isset( $GLOBALS['pagenow'] ) && 'update-core.php' === $GLOBALS['pagenow'] ) ) {
 			delete_transient( $cache_key );
 		} else {
 			$cached = get_transient( $cache_key );
