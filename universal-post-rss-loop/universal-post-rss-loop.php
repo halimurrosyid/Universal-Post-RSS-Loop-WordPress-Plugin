@@ -1,3 +1,5 @@
+<?php
+/**
  * Plugin Name:       Universal Post & RSS Loop
  * Plugin URI:        https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin
  * Description:       Unified post grid/list display for WordPress Posts and External RSS Feeds using the exact same card design.
