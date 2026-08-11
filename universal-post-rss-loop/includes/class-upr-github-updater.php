@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Native GitHub Auto-Updater for WordPress Plugin
- * Enables 1-click update directly from wp-admin/plugins.php via GitHub Releases
+ * Enables 1-click update directly from wp-admin/plugins.php via GitHub Releases or Tags
  */
 class UPR_GitHub_Updater {
 
@@ -25,11 +25,11 @@ class UPR_GitHub_Updater {
 	}
 
 	/**
-	 * Check for updates against GitHub Releases API
+	 * Check for updates against GitHub Releases or Tags API
 	 */
 	public function check_update( $transient ) {
-		if ( empty( $transient->checked ) ) {
-			return $transient;
+		if ( empty( $transient ) || ! is_object( $transient ) ) {
+			$transient = new stdClass();
 		}
 
 		$release = $this->get_latest_release();
@@ -42,15 +42,14 @@ class UPR_GitHub_Updater {
 		if ( version_compare( $this->version, $github_version, '<' ) ) {
 			$download_url = ! empty( $release->assets[0]->browser_download_url )
 				? $release->assets[0]->browser_download_url
-				: $release->zipball_url;
+				: ( ! empty( $release->zipball_url ) ? $release->zipball_url : 'https://github.com/' . $this->github_repo . '/archive/refs/tags/v' . $github_version . '.zip' );
 
 			$obj              = new stdClass();
-			$obj->slug        = $this->plugin_slug;
+			$obj->slug        = 'universal-post-rss-loop';
 			$obj->plugin      = $this->plugin_slug;
 			$obj->new_version = $github_version;
 			$obj->url         = 'https://github.com/' . $this->github_repo;
 			$obj->package     = $download_url;
-			$obj->icons       = array( 'default' => 'https://raw.githubusercontent.com/' . $this->github_repo . '/main/assets/icon.png' );
 
 			$transient->response[ $this->plugin_slug ] = $obj;
 		}
@@ -62,7 +61,7 @@ class UPR_GitHub_Updater {
 	 * Populate WP Plugin Details popup modal
 	 */
 	public function plugin_popup( $result, $action, $args ) {
-		if ( 'plugin_information' !== $action || empty( $args->slug ) || $args->slug !== $this->plugin_slug ) {
+		if ( 'plugin_information' !== $action || empty( $args->slug ) || ( $args->slug !== $this->plugin_slug && $args->slug !== 'universal-post-rss-loop' ) ) {
 			return $result;
 		}
 
@@ -81,7 +80,7 @@ class UPR_GitHub_Updater {
 		$res->homepage      = 'https://github.com/' . $this->github_repo;
 		$res->download_link = ! empty( $release->assets[0]->browser_download_url )
 			? $release->assets[0]->browser_download_url
-			: $release->zipball_url;
+			: ( ! empty( $release->zipball_url ) ? $release->zipball_url : 'https://github.com/' . $this->github_repo . '/archive/refs/tags/v' . $github_version . '.zip' );
 
 		$res->sections = array(
 			'description' => 'Unified post grid/list display for WordPress Posts and External RSS Feeds using the exact same card design.',
@@ -109,7 +108,7 @@ class UPR_GitHub_Updater {
 	}
 
 	/**
-	 * Fetch latest release from GitHub API with transient caching
+	 * Fetch latest release from GitHub API with fallback to tags API
 	 */
 	private function get_latest_release() {
 		$cache_key = 'upr_github_release_info';
@@ -123,6 +122,7 @@ class UPR_GitHub_Updater {
 			}
 		}
 
+		// Try official releases first
 		$url      = 'https://api.github.com/repos/' . $this->github_repo . '/releases/latest';
 		$response = wp_remote_get(
 			$url,
@@ -134,16 +134,39 @@ class UPR_GitHub_Updater {
 			)
 		);
 
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-			return false;
+		if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+			$body = json_decode( wp_remote_retrieve_body( $response ) );
+			if ( ! empty( $body ) && is_object( $body ) ) {
+				set_transient( $cache_key, $body, 1 * HOUR_IN_SECONDS );
+				return $body;
+			}
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ) );
-		if ( empty( $body ) || ! is_object( $body ) ) {
-			return false;
+		// Fallback to tags API if no GitHub Release object exists
+		$tags_url = 'https://api.github.com/repos/' . $this->github_repo . '/tags';
+		$tags_res = wp_remote_get(
+			$tags_url,
+			array(
+				'headers' => array(
+					'User-Agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . home_url(),
+				),
+				'timeout' => 10,
+			)
+		);
+
+		if ( ! is_wp_error( $tags_res ) && 200 === wp_remote_retrieve_response_code( $tags_res ) ) {
+			$tags = json_decode( wp_remote_retrieve_body( $tags_res ) );
+			if ( ! empty( $tags ) && is_array( $tags ) ) {
+				$latest_tag = $tags[0];
+				$body = new stdClass();
+				$body->tag_name = $latest_tag->name;
+				$body->zipball_url = 'https://github.com/' . $this->github_repo . '/archive/refs/tags/' . $latest_tag->name . '.zip';
+				$body->body = 'Release ' . $latest_tag->name;
+				set_transient( $cache_key, $body, 1 * HOUR_IN_SECONDS );
+				return $body;
+			}
 		}
 
-		set_transient( $cache_key, $body, 1 * HOUR_IN_SECONDS );
-		return $body;
+		return false;
 	}
 }
