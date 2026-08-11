@@ -4,7 +4,7 @@
 
 - **Author**: Mujaddid Halimurrosyid
 - **Author URI**: [https://ajidmujaddid.staff.telkomuniversity.ac.id/](https://ajidmujaddid.staff.telkomuniversity.ac.id/)
-- **Version**: 2.0.0
+- **Version**: 2.0.2
 - **License**: GPL-2.0+
 
 ---
