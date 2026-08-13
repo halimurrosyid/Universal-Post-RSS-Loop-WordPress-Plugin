@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Class UPR_RSS_Parser
- * Handles XML parsing for RSS 2.0 and Atom feeds, with rich validation and image extraction.
+ * Handles XML parsing for RSS 2.0 and Atom feeds, with rich validation and image extraction. (v2.0.4)
  */
 class UPR_RSS_Parser {
 
@@ -28,16 +28,30 @@ class UPR_RSS_Parser {
 			return new WP_Error( 'invalid_protocol', __( 'Only http:// and https:// URLs are allowed for security.', 'universal-post-rss-loop' ) );
 		}
 
-		// Remote HTTP request using WP HTTP API
-		$response = wp_safe_remote_get(
-			$url,
-			array(
-				'timeout'     => 15,
-				'redirection' => 5,
-				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) UniversalPostRSSLoop/' . UPR_VERSION . ' (WordPress Plugin)',
-				'sslverify'   => apply_filters( 'upr_rss_ssl_verify', true ),
-			)
+		// Standard Chrome User-Agent string to bypass Cloudflare / ModSecurity WAF User-Agent blocks
+		$user_agent = apply_filters(
+			'upr_rss_user_agent',
+			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 UniversalPostRSSLoop/' . UPR_VERSION
 		);
+
+		$request_args = array(
+			'timeout'     => 15,
+			'redirection' => 5,
+			'user-agent'  => $user_agent,
+			'sslverify'   => apply_filters( 'upr_rss_ssl_verify', false ),
+			'headers'     => array(
+				'Accept'          => 'application/rss+xml, application/xml, text/xml, */*',
+				'Cache-Control'   => 'no-cache',
+			),
+		);
+
+		// Try safe remote get first
+		$response = wp_safe_remote_get( $url, $request_args );
+
+		// Fallback to wp_remote_get if wp_safe_remote_get blocked internal/loopback IP resolution
+		if ( is_wp_error( $response ) ) {
+			$response = wp_remote_get( $url, $request_args );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			$error_msg = $response->get_error_message();
@@ -63,285 +77,225 @@ class UPR_RSS_Parser {
 			);
 		}
 
-		$content_type = wp_remote_retrieve_header( $response, 'content-type' );
-		$body         = wp_remote_retrieve_body( $response );
-
+		$body = wp_remote_retrieve_body( $response );
 		if ( empty( $body ) ) {
-			return new WP_Error( 'empty_response', __( 'Feed server returned empty response content.', 'universal-post-rss-loop' ) );
+			return new WP_Error( 'empty_body', __( 'Feed server returned an empty response body.', 'universal-post-rss-loop' ) );
 		}
 
-		// Security: Suppress libxml errors and disable external entity loading (Anti-XXE protection)
-		libxml_use_internal_errors( true );
-		$previous_entity_loader = false;
-		if ( function_exists( 'libxml_disable_entity_loader' ) && PHP_VERSION_ID < 80000 ) {
-			$previous_entity_loader = @libxml_disable_entity_loader( true );
-		}
+		return self::parse_xml( $body, $options );
+	}
 
-		$xml = simplexml_load_string( $body, 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_NONET );
-		$xml_errors = libxml_get_errors();
-		libxml_clear_errors();
+	/**
+	 * Parse XML String into structured data array.
+	 */
+	public static function parse_xml( $xml_string, array $options = array() ) {
+		// Anti-XXE XML Parser Settings
+		$disable_entities = function_exists( 'libxml_disable_entity_loader' ) ? @libxml_disable_entity_loader( true ) : true;
+		$use_errors       = libxml_use_internal_errors( true );
 
-		if ( function_exists( 'libxml_disable_entity_loader' ) && PHP_VERSION_ID < 80000 ) {
-			@libxml_disable_entity_loader( $previous_entity_loader );
+		$xml = simplexml_load_string( $xml_string, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT | LIBXML_NOWARNING | LIBXML_NOERROR );
+
+		libxml_use_internal_errors( $use_errors );
+		if ( function_exists( 'libxml_disable_entity_loader' ) ) {
+			@libxml_disable_entity_loader( $disable_entities );
 		}
 
 		if ( ! $xml ) {
-			$err_detail = ! empty( $xml_errors ) ? $xml_errors[0]->message : __( 'Invalid XML syntax', 'universal-post-rss-loop' );
-			return new WP_Error(
-				'xml_parse_error',
-				sprintf(
-					/* translators: %s: XML error message */
-					__( 'Feed XML could not be parsed (%s). The URL might point to a web page instead of an RSS/Atom XML feed.', 'universal-post-rss-loop' ),
-					trim( $err_detail )
-				)
+			return new WP_Error( 'xml_parse_error', __( 'Failed to parse XML syntax. Ensure the URL returns valid RSS or Atom XML format.', 'universal-post-rss-loop' ) );
+		}
+
+		$fallback_img = ! empty( $options['fallback_image'] ) ? $options['fallback_image'] : '';
+
+		// Detect RSS vs Atom
+		if ( isset( $xml->channel ) ) {
+			return self::parse_rss2( $xml, $fallback_img );
+		} elseif ( $xml->getName() === 'feed' ) {
+			return self::parse_atom( $xml, $fallback_img );
+		}
+
+		return new WP_Error( 'unknown_feed_format', __( 'Unknown feed format. Only RSS 2.0 and Atom feeds are supported.', 'universal-post-rss-loop' ) );
+	}
+
+	/**
+	 * Parse RSS 2.0 XML
+	 */
+	private static function parse_rss2( $xml, $fallback_img = '' ) {
+		$source_name = (string) $xml->channel->title;
+		$source_url  = (string) $xml->channel->link;
+		$items       = array();
+
+		foreach ( $xml->channel->item as $item ) {
+			$title       = (string) $item->title;
+			$url         = (string) $item->link;
+			$guid        = (string) $item->guid;
+			$author      = (string) $item->author;
+			$pub_date    = (string) $item->pubDate;
+			$category    = (string) $item->category;
+			$description = (string) $item->description;
+
+			// Content encoded (full HTML)
+			$content_encoded = '';
+			$namespaces      = $item->getNameSpaces( true );
+			if ( isset( $namespaces['content'] ) ) {
+				$content_ns      = $item->children( $namespaces['content'] );
+				$content_encoded = (string) $content_ns->encoded;
+			}
+
+			// Extract best available featured image via 5-tier fallback
+			$image = self::extract_image( $item, $description, $content_encoded, $fallback_img );
+
+			// Format Date
+			$formatted_date = '';
+			if ( ! empty( $pub_date ) ) {
+				$timestamp = strtotime( $pub_date );
+				if ( $timestamp ) {
+					$formatted_date = date_i18n( get_option( 'date_format' ), $timestamp );
+				}
+			}
+
+			// Sanitize excerpt
+			$excerpt_raw = ! empty( $description ) ? $description : $content_encoded;
+			$excerpt     = wp_strip_all_tags( $excerpt_raw );
+
+			$items[] = array(
+				'title'       => trim( $title ),
+				'url'         => trim( $url ),
+				'guid'        => trim( $guid ),
+				'image'       => esc_url_raw( $image ),
+				'excerpt'     => trim( $excerpt ),
+				'date'        => $formatted_date,
+				'author'      => trim( $author ),
+				'category'    => trim( $category ),
+				'source_name' => trim( $source_name ),
+				'source_url'  => trim( $source_url ),
+				'is_external' => true,
 			);
 		}
 
-		// Detect RSS 2.0 vs Atom 1.0 vs RSS 1.0 (RDF)
-		$feed_type = 'unknown';
-		$items     = array();
-		$channel_title = '';
-		$channel_url   = '';
-
-		if ( isset( $xml->channel ) ) {
-			// RSS 2.0
-			$feed_type     = 'RSS 2.0';
-			$channel_title = (string) $xml->channel->title;
-			$channel_url   = (string) $xml->channel->link;
-
-			if ( isset( $xml->channel->item ) ) {
-				foreach ( $xml->channel->item as $item ) {
-					$items[] = self::parse_rss_item( $item, $channel_title, $channel_url, $options );
-				}
-			}
-		} elseif ( $xml->getName() === 'feed' || isset( $xml->entry ) ) {
-			// Atom 1.0
-			$feed_type     = 'Atom 1.0';
-			$channel_title = (string) $xml->title;
-			
-			// Find channel link
-			if ( isset( $xml->link ) ) {
-				foreach ( $xml->link as $link ) {
-					$rel = (string) $link['rel'];
-					if ( empty( $rel ) || $rel === 'alternate' ) {
-						$channel_url = (string) $link['href'];
-						break;
-					}
-				}
-			}
-
-			if ( isset( $xml->entry ) ) {
-				foreach ( $xml->entry as $entry ) {
-					$items[] = self::parse_atom_entry( $entry, $channel_title, $channel_url, $options );
-				}
-			}
-		} else {
-			return new WP_Error( 'unsupported_feed', __( 'Feed structure is not recognized as RSS 2.0 or Atom 1.0.', 'universal-post-rss-loop' ) );
-		}
-
 		return array(
-			'http_status'   => $status_code,
-			'content_type'  => $content_type,
-			'feed_type'     => $feed_type,
-			'channel_title' => $channel_title,
-			'channel_url'   => $channel_url,
-			'items'         => $items,
+			'source_name' => $source_name,
+			'source_url'  => $source_url,
+			'items'       => $items,
 		);
 	}
 
 	/**
-	 * Parse an RSS 2.0 item node.
+	 * Parse Atom Feed XML
 	 */
-	private static function parse_rss_item( $item, $channel_title, $channel_url, array $options ) {
-		$namespaces = $item->getNamespaces( true );
-
-		$title = (string) $item->title;
-		$link  = (string) $item->link;
-		$guid  = (string) $item->guid;
-		if ( empty( $link ) && ! empty( $guid ) && filter_var( $guid, FILTER_VALIDATE_URL ) ) {
-			$link = $guid;
+	private static function parse_atom( $xml, $fallback_img = '' ) {
+		$source_name = (string) $xml->title;
+		$source_url  = '';
+		foreach ( $xml->link as $link ) {
+			if ( (string) $link['rel'] === 'alternate' || empty( $link['rel'] ) ) {
+				$source_url = (string) $link['href'];
+				break;
+			}
 		}
 
-		// Publication date
-		$pub_date  = (string) $item->pubDate;
-		$timestamp = ! empty( $pub_date ) ? strtotime( $pub_date ) : time();
-		$date_fmt  = $timestamp ? date_i18n( get_option( 'date_format' ), $timestamp ) : '';
-
-		// Author
-		$author = (string) $item->author;
-		if ( empty( $author ) && isset( $namespaces['dc'] ) ) {
-			$dc     = $item->children( $namespaces['dc'] );
-			$author = (string) $dc->creator;
-		}
-
-		// Category
-		$category = (string) $item->category;
-
-		// Description & Content snippet
-		$description = (string) $item->description;
-		$content     = '';
-		if ( isset( $namespaces['content'] ) ) {
-			$content_ns = $item->children( $namespaces['content'] );
-			$content    = (string) $content_ns->encoded;
-		}
-
-		$raw_html = ! empty( $content ) ? $content : $description;
-		$excerpt  = wp_strip_all_tags( $description );
-		if ( empty( $excerpt ) ) {
-			$excerpt = wp_strip_all_tags( $content );
-		}
-		$excerpt = wp_trim_words( html_entity_decode( $excerpt, ENT_QUOTES, 'UTF-8' ), 30, '...' );
-
-		// Image extraction hierarchy
-		$image_url = self::extract_image_from_node( $item, $namespaces, $raw_html, $options );
-
-		return array(
-			'guid'        => $guid,
-			'title'       => html_entity_decode( trim( $title ), ENT_QUOTES, 'UTF-8' ),
-			'url'         => esc_url_raw( trim( $link ) ),
-			'image'       => $image_url,
-			'excerpt'     => $excerpt,
-			'date'        => $date_fmt,
-			'timestamp'   => $timestamp,
-			'author'      => html_entity_decode( trim( $author ), ENT_QUOTES, 'UTF-8' ),
-			'category'    => html_entity_decode( trim( $category ), ENT_QUOTES, 'UTF-8' ),
-			'source_name' => html_entity_decode( trim( $channel_title ), ENT_QUOTES, 'UTF-8' ),
-			'source_url'  => esc_url_raw( trim( $channel_url ) ),
-		);
-	}
-
-	/**
-	 * Parse an Atom 1.0 entry node.
-	 */
-	private static function parse_atom_entry( $entry, $channel_title, $channel_url, array $options ) {
-		$namespaces = $entry->getNamespaces( true );
-
-		$title = (string) $entry->title;
-		$id    = (string) $entry->id;
-
-		// Link
-		$link = '';
-		if ( isset( $entry->link ) ) {
-			foreach ( $entry->link as $l ) {
-				$rel = (string) $l['rel'];
-				if ( empty( $rel ) || $rel === 'alternate' ) {
-					$link = (string) $l['href'];
+		$items = array();
+		foreach ( $xml->entry as $entry ) {
+			$title   = (string) $entry->title;
+			$url     = '';
+			foreach ( $entry->link as $link ) {
+				if ( (string) $link['rel'] === 'alternate' || empty( $link['rel'] ) ) {
+					$url = (string) $link['href'];
 					break;
 				}
 			}
+
+			$guid        = (string) $entry->id;
+			$author      = isset( $entry->author->name ) ? (string) $entry->author->name : '';
+			$pub_date    = isset( $entry->published ) ? (string) $entry->published : (string) $entry->updated;
+			$summary     = (string) $entry->summary;
+			$content     = (string) $entry->content;
+
+			$image       = self::extract_image( $entry, $summary, $content, $fallback_img );
+			$formatted_d = '';
+			if ( ! empty( $pub_date ) ) {
+				$t = strtotime( $pub_date );
+				if ( $t ) {
+					$formatted_d = date_i18n( get_option( 'date_format' ), $t );
+				}
+			}
+
+			$excerpt = wp_strip_all_tags( ! empty( $summary ) ? $summary : $content );
+
+			$items[] = array(
+				'title'       => trim( $title ),
+				'url'         => trim( $url ),
+				'guid'        => trim( $guid ),
+				'image'       => esc_url_raw( $image ),
+				'excerpt'     => trim( $excerpt ),
+				'date'        => $formatted_d,
+				'author'      => trim( $author ),
+				'category'    => '',
+				'source_name' => trim( $source_name ),
+				'source_url'  => trim( $source_url ),
+				'is_external' => true,
+			);
 		}
-
-		// Published / Updated date
-		$pub_date  = (string) $entry->published;
-		if ( empty( $pub_date ) ) {
-			$pub_date = (string) $entry->updated;
-		}
-		$timestamp = ! empty( $pub_date ) ? strtotime( $pub_date ) : time();
-		$date_fmt  = $timestamp ? date_i18n( get_option( 'date_format' ), $timestamp ) : '';
-
-		// Author
-		$author = '';
-		if ( isset( $entry->author->name ) ) {
-			$author = (string) $entry->author->name;
-		}
-
-		// Category
-		$category = '';
-		if ( isset( $entry->category['term'] ) ) {
-			$category = (string) $entry->category['term'];
-		}
-
-		// Summary / Content
-		$summary = (string) $entry->summary;
-		$content = (string) $entry->content;
-		$raw_html = ! empty( $content ) ? $content : $summary;
-
-		$excerpt = wp_strip_all_tags( $summary );
-		if ( empty( $excerpt ) ) {
-			$excerpt = wp_strip_all_tags( $content );
-		}
-		$excerpt = wp_trim_words( html_entity_decode( $excerpt, ENT_QUOTES, 'UTF-8' ), 30, '...' );
-
-		$image_url = self::extract_image_from_node( $entry, $namespaces, $raw_html, $options );
 
 		return array(
-			'guid'        => $id,
-			'title'       => html_entity_decode( trim( $title ), ENT_QUOTES, 'UTF-8' ),
-			'url'         => esc_url_raw( trim( $link ) ),
-			'image'       => $image_url,
-			'excerpt'     => $excerpt,
-			'date'        => $date_fmt,
-			'timestamp'   => $timestamp,
-			'author'      => html_entity_decode( trim( $author ), ENT_QUOTES, 'UTF-8' ),
-			'category'    => html_entity_decode( trim( $category ), ENT_QUOTES, 'UTF-8' ),
-			'source_name' => html_entity_decode( trim( $channel_title ), ENT_QUOTES, 'UTF-8' ),
-			'source_url'  => esc_url_raw( trim( $channel_url ) ),
+			'source_name' => $source_name,
+			'source_url'  => $source_url,
+			'items'       => $items,
 		);
 	}
 
 	/**
-	 * Extract image from node using 5-step fallback logic.
-	 * 1. media:content / media:thumbnail
-	 * 2. enclosure image
-	 * 3. image element
-	 * 4. 1st <img> from HTML content
-	 * 5. fallback image option
+	 * Extract image with 5-tier fallback mechanism.
 	 */
-	private static function extract_image_from_node( $node, array $namespaces, $raw_html, array $options ) {
-		// 1. Check media:content / media:thumbnail
+	private static function extract_image( $item, $html1 = '', $html2 = '', $fallback = '' ) {
+		// Tier 1: media:content / media:thumbnail
+		$namespaces = $item->getNameSpaces( true );
 		if ( isset( $namespaces['media'] ) ) {
-			$media = $node->children( $namespaces['media'] );
+			$media = $item->children( $namespaces['media'] );
 			if ( isset( $media->content ) ) {
 				foreach ( $media->content as $m ) {
-					$url  = (string) $m->attributes()->url;
-					$type = (string) $m->attributes()->type;
-					$medium = (string) $m->attributes()->medium;
-					if ( ! empty( $url ) && ( empty( $type ) || strpos( $type, 'image' ) !== false || $medium === 'image' ) ) {
-						return esc_url_raw( $url );
+					$attributes = $m->attributes();
+					if ( isset( $attributes['url'] ) ) {
+						$url = (string) $attributes['url'];
+						if ( preg_match( '/\.(jpg|jpeg|png|gif|webp|svg)/i', $url ) ) {
+							return $url;
+						}
 					}
 				}
 			}
 			if ( isset( $media->thumbnail ) ) {
-				$url = (string) $media->thumbnail->attributes()->url;
-				if ( ! empty( $url ) ) {
-					return esc_url_raw( $url );
+				$attributes = $media->thumbnail->attributes();
+				if ( isset( $attributes['url'] ) ) {
+					return (string) $attributes['url'];
 				}
 			}
 		}
 
-		// 2. Check enclosure
-		if ( isset( $node->enclosure ) ) {
-			foreach ( $node->enclosure as $enc ) {
-				$url  = (string) $enc->attributes()->url;
-				$type = (string) $enc->attributes()->type;
-				if ( ! empty( $url ) && strpos( $type, 'image' ) !== false ) {
-					return esc_url_raw( $url );
+		// Tier 2: enclosure
+		if ( isset( $item->enclosure ) ) {
+			foreach ( $item->enclosure as $enc ) {
+				$type = (string) $enc['type'];
+				if ( strpos( $type, 'image/' ) === 0 || preg_match( '/\.(jpg|jpeg|png|gif|webp)/i', (string) $enc['url'] ) ) {
+					return (string) $enc['url'];
 				}
 			}
 		}
 
-		// 3. Check image child
-		if ( isset( $node->image->url ) ) {
-			$url = (string) $node->image->url;
-			if ( ! empty( $url ) ) {
-				return esc_url_raw( $url );
-			}
-		}
-
-		// 4. First <img> tag in HTML content
-		if ( ! empty( $raw_html ) ) {
-			if ( preg_match( '/<img[^>]+src=["\']([^"\']+)["\']/i', $raw_html, $matches ) ) {
-				if ( ! empty( $matches[1] ) ) {
-					return esc_url_raw( $matches[1] );
+		// Tier 3: First <img> tag in HTML content
+		$combined_html = $html1 . ' ' . $html2;
+		if ( ! empty( $combined_html ) ) {
+			if ( preg_match( '/<img[^>]+src=["\']([^"\']+)["\']/i', $combined_html, $matches ) ) {
+				$img_src = $matches[1];
+				if ( strpos( $img_src, 'data:image/' ) !== 0 ) {
+					return $img_src;
 				}
 			}
 		}
 
-		// 5. Fallback image option if specified
-		if ( ! empty( $options['fallback_image'] ) ) {
-			return esc_url_raw( $options['fallback_image'] );
+		// Tier 4: Global Fallback Image
+		if ( ! empty( $fallback ) ) {
+			return $fallback;
 		}
 
-		return '';
+		// Tier 5: Default SVG Data URI Placeholder
+		return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="%2394a3b8">No Image Available</text></svg>';
 	}
 }
