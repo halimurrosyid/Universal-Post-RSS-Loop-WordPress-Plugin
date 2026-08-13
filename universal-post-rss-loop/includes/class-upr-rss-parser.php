@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Class UPR_RSS_Parser
- * Handles XML parsing for RSS 2.0 and Atom feeds, with rich validation and image extraction. (v2.0.4)
+ * Handles XML parsing for RSS 2.0 and Atom feeds, with rich validation and image extraction. (v2.0.5)
  */
 class UPR_RSS_Parser {
 
@@ -28,6 +28,9 @@ class UPR_RSS_Parser {
 			return new WP_Error( 'invalid_protocol', __( 'Only http:// and https:// URLs are allowed for security.', 'universal-post-rss-loop' ) );
 		}
 
+		// Allow intranet/campus domain host requests (e.g. *.telkomuniversity.ac.id)
+		add_filter( 'http_request_host_is_external', '__return_true', 999 );
+
 		// Standard Chrome User-Agent string to bypass Cloudflare / ModSecurity WAF User-Agent blocks
 		$user_agent = apply_filters(
 			'upr_rss_user_agent',
@@ -40,18 +43,47 @@ class UPR_RSS_Parser {
 			'user-agent'  => $user_agent,
 			'sslverify'   => apply_filters( 'upr_rss_ssl_verify', false ),
 			'headers'     => array(
-				'Accept'          => 'application/rss+xml, application/xml, text/xml, */*',
-				'Cache-Control'   => 'no-cache',
+				'Accept'        => 'application/rss+xml, application/xml, text/xml, */*',
+				'Cache-Control' => 'no-cache',
 			),
 		);
 
-		// Try safe remote get first
+		// Tier 1: Try safe remote get
 		$response = wp_safe_remote_get( $url, $request_args );
 
-		// Fallback to wp_remote_get if wp_safe_remote_get blocked internal/loopback IP resolution
+		// Tier 2: Fallback to wp_remote_get if wp_safe_remote_get blocked internal/loopback IP resolution
 		if ( is_wp_error( $response ) ) {
 			$response = wp_remote_get( $url, $request_args );
 		}
+
+		// Tier 3: Fallback to direct cURL if WordPress HTTP API blocked host resolution on campus network
+		if ( is_wp_error( $response ) && function_exists( 'curl_init' ) ) {
+			$ch = curl_init();
+			curl_setopt( $ch, CURLOPT_URL, $url );
+			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+			curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, true );
+			curl_setopt( $ch, CURLOPT_MAXREDIRS, 5 );
+			curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+			curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, false );
+			curl_setopt( $ch, CURLOPT_USERAGENT, $user_agent );
+			curl_setopt( $ch, CURLOPT_HTTPHEADER, array(
+				'Accept: application/rss+xml, application/xml, text/xml, */*',
+				'Cache-Control: no-cache',
+			) );
+			$curl_body = curl_exec( $ch );
+			$curl_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+			curl_close( $ch );
+
+			if ( ! empty( $curl_body ) && $curl_code >= 200 && $curl_code < 400 ) {
+				$response = array(
+					'response' => array( 'code' => $curl_code ),
+					'body'     => $curl_body,
+				);
+			}
+		}
+
+		remove_filter( 'http_request_host_is_external', '__return_true', 999 );
 
 		if ( is_wp_error( $response ) ) {
 			$error_msg = $response->get_error_message();
