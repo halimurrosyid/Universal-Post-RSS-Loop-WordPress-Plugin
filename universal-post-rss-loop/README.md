@@ -1,110 +1,104 @@
 # 🚀 Universal Post & RSS Loop (WordPress Plugin)
 
-**Universal Post & RSS Loop** is a powerful, modern, and highly customizable WordPress plugin designed to render both **WordPress Posts** and **External RSS Feeds** using the exact same unified, beautiful card grid design.
+**Universal Post & RSS Loop** adalah plugin WordPress modern, fleksibel, dan kaya fitur yang dirancang untuk menampilkan **WordPress Posts** maupun **External RSS Feeds** menggunakan desain card grid yang konsisten, responsif, dan elegan.
 
-- **Author**: Mujaddid Halimurrosyid
-- **Author URI**: [https://ajidmujaddid.staff.telkomuniversity.ac.id/](https://ajidmujaddid.staff.telkomuniversity.ac.id/)
-- **Version**: 2.0.0
-- **License**: GPL-2.0+
-
----
-
-## ✨ Features at a Glance
-
-### 1. 🔄 Data Source Switch
-- **WordPress Posts**: Auto-detects all public Post Types (`post`, `page`, `portfolio`, `product`, custom post types) and Categories.
-- **External RSS Feeds**: Seamlessly fetches, parses, and formats external RSS feeds without saving them as posts into your database. Clicking external RSS articles opens the original source URL in a new tab.
-- **Multiple Feeds Aggregator**: Merge multiple RSS feed URLs into a single unified stream.
-
-### 2. 🎨 5 Modern Preset Card Designs
-- **Classic Card**: Clean border, soft shadow, and structured content.
-- **Modern Card**: Floating elevation shadow with blurred glass badge overlay on top of the image.
-- **Minimalist**: Flat design with subtle bottom borders.
-- **Overlay Hero**: Full dark gradient backdrop over a 100% height cover image with crisp white typography.
-- **Glassmorphism**: Elegant frosted glass effect with backdrop blur.
-
-### 3. ⚡ Interactive Features
-- **🔍 Live Search Bar**: Instant real-time article filtering as visitors type.
-- **🗂️ Category Filter Tabs**: Animated tab filter buttons above the grid.
-- **🔄 Pagination Modes**: Choose between *Load More Button* or *Numeric Page Numbers (1, 2, 3...)*.
-- **⏱️ Read Time Estimator**: Automatic `⏱️ X min read` metadata calculation.
-- **💬 Social Share Buttons**: One-click sharing to WhatsApp, Twitter/X, Facebook, and LinkedIn.
-- **⚙️ WP-Cron Pre-caching**: Hourly background pre-caching ensures 0ms instant page loads.
-
-### 4. 🛠️ Page Builder & Shortcode Integration
-- **Gutenberg Block**: Custom native block (`upr/universal-post-rss-loop`) with live server-side preview in the editor.
-- **WPBakery Page Builder**: Fully integrated via `vc_map()` with organized tabs, dropdowns, and color pickers.
-- **Shortcode**: Flexible shortcode `[universal_post_rss_loop]` for classic editor, widgets, or PHP templates.
+- **Penulis**: Mujaddid Halimurrosyid
+- **Situs Penulis**: [https://ajidmujaddid.staff.telkomuniversity.ac.id/](https://ajidmujaddid.staff.telkomuniversity.ac.id/)
+- **Versi**: 2.0.3
+- **Lisensi**: GPL-2.0+
+- **Repository GitHub**: [https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin](https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin)
 
 ---
 
-## 💻 Shortcode Examples
+## ✨ Fitur-Fitur Unggulan
 
-### Basic Grid for WordPress Posts
+### 1. 🔄 Sakelar Sumber Data (*Data Source Switch*)
+- **WordPress Posts**: Otomatis mendeteksi seluruh *Public Post Types* terdaftar (`post`, `page`, `portfolio`, `product`, custom post type) dan Kategori di WordPress Anda.
+- **External RSS Feeds**: Membaca dan menampilkan berita dari situs RSS luar secara *live* tanpa mengotori atau menyimpan artikel ke dalam database WordPress.
+- **Aggregator Multi-Feed**: Menggabungkan beberapa URL RSS Feed sekaligus dalam satu tampilan grid seragam.
+
+### 2. 🎨 5 Preset Desain Card Modern
+- **Classic Card**: Desain bersih dengan garis tepi (*border*) halus dan bayangan lembut.
+- **Modern Card**: Bayangan melayang (*floating shadow*) dengan badge kategori/sumber efek kaca buram di atas gambar.
+- **Minimalist**: Desain *flat* minimalis dengan garis pembatas tipis di bagian bawah.
+- **Overlay Hero**: Gambar latar penuh (*100% height backdrop*) dengan efek gradient gelap dan teks putih yang sangat tajam dan kontras.
+- **Glassmorphism**: Efek transparan miring bergaya kaca buram (*frosted glass*) modern.
+
+### 3. ⚡ Fitur Interaktif & UX Lanjutan
+- **🔍 Live Search Bar**: Kolom pencarian berita *real-time* langsung saat pengunjung mengetik.
+- **🗂️ Tab Filter Kategori**: Tombol filter kategori dinamis dengan efek animasi yang halus.
+- **🔄 Mode Navigasi Halaman**: Pilihan tombol **Load More** (*Muat Lebih Banyak*) atau **Nomor Halaman (1, 2, 3...)**.
+- **⏱️ Estimasi Waktu Baca**: Menghitung durasi baca otomatis (`⏱️ X min read`).
+- **💬 Tombol Bagikan Sosial Media**: Berbagi instan ke WhatsApp, Twitter/X, Facebook, dan LinkedIn.
+- **⚙️ WP-Cron Pre-caching**: Caching otomatis di latar belakang secara berkala untuk memastikan kecepatan muat halaman **0 ms (Instant Load)**.
+
+### 4. 🛠️ Integrasi Page Builder & Shortcode
+- **Gutenberg Block**: Blok kustom native (`upr/universal-post-rss-loop`) dengan *Live Server-side Preview* di dalam layar editor Gutenberg.
+- **WPBakery Page Builder**: Terintegrasi penuh via `vc_map()` dengan 7 tab parameter yang tersusun rapi dan ColorPicker visual.
+- **Shortcode Fleksibel**: Dapat dipasang di editor klasik, widget, atau file template PHP theme.
+
+### 5. 🔄 Pembaruan Otomatis 1-Klik dari GitHub
+- Plugin ini dilengkapi dengan sistem **Native GitHub Auto-Updater**.
+- Setiap ada rilis versi baru di GitHub, notifikasi pembaruan akan **otomatis muncul di dashboard `wp-admin/plugins.php`** Anda dan dapat diperbarui cukup dengan 1x klik tombol **Update Now**.
+
+---
+
+## 💻 Contoh Penggunaan Shortcode
+
+### 1. Grid Dasar untuk WordPress Posts
 ```shortcode
 [universal_post_rss_loop source="posts" limit="6" columns="3" card_style="modern"]
 ```
 
-### Display External RSS Feed
+### 2. Menampilkan RSS Feed Luar
 ```shortcode
 [universal_post_rss_loop source="rss" feed_url="https://news.ycombinator.com/rss" limit="6" card_style="classic"]
 ```
 
-### Full Interactive Grid with Live Search, Filter Tabs & Load More
+### 3. Tampilan Interaktif Lengkap (Live Search, Tab Filter & Load More)
 ```shortcode
 [universal_post_rss_loop source="posts" card_style="overlay" show_search_bar="true" show_filter_tabs="true" show_read_time="true" show_social_share="true" pagination_type="load_more" items_per_page="6"]
 ```
 
 ---
 
-## 📋 Complete Shortcode Parameters Reference
+## 📋 Tabel Referensi Parameter Shortcode
 
-| Parameter | Options / Default | Description |
+| Parameter | Pilihan / Default | Keterangan |
 |---|---|---|
-| `source` | `posts` \| `rss` (Default: `posts`) | Data source switch |
-| `post_type` | `post`, `page`, etc. (Default: `post`) | Target post type |
-| `category` | Category Slug | Filter posts by category slug |
-| `feed_url` | RSS Feed URL | Single RSS feed source URL |
-| `feeds` | Comma/Line separated URLs | Multiple RSS feed source URLs |
-| `limit` | `1` to `50` (Default: `6`) | Total number of items |
-| `card_style` | `classic`, `modern`, `minimal`, `overlay`, `glass` | Preset design card model |
-| `layout` | `grid`, `list`, `horizontal`, `custom` | Display layout mode |
-| `columns` | `1` to `6` (Default: `3`) | Grid columns count |
-| `image_ratio` | `16:9`, `4:3`, `1:1`, `3:2`, `auto` | Image aspect ratio box |
-| `image_hover_effect` | `zoom`, `brighten`, `none` | Image hover animation |
-| `show_search_bar` | `true` \| `false` | Enable live search bar |
-| `show_filter_tabs` | `true` \| `false` | Enable category filter tabs |
-| `show_read_time` | `true` \| `false` | Display estimated read time |
-| `show_social_share`| `true` \| `false` | Display social share icons |
-| `pagination_type` | `none`, `load_more`, `numeric` | Pagination mode |
-| `items_per_page` | `1` to `30` (Default: `6`) | Items visible per page slice |
-| `card_bg` | Hex / RGBA Color | Custom card background color |
-| `title_color` | Hex / RGBA Color | Custom title font color |
-| `button_bg` | Hex / RGBA Color | Custom Read More button background |
+| `source` | `posts` \| `rss` (Default: `posts`) | Pilihan sumber data (WP Posts atau RSS Feed) |
+| `post_type` | `post`, `page`, dsb. (Default: `post`) | Tipe postingan WordPress |
+| `category` | Slug Kategori | Filter postingan berdasarkan slug kategori |
+| `feed_url` | URL RSS Feed | URL sumber RSS Feed tunggal |
+| `feeds` | URL dipisah koma/baris | Penggabung beberapa URL RSS Feed |
+| `limit` | `1` hingga `50` (Default: `6`) | Total jumlah artikel yang ditampilkan |
+| `card_style` | `classic`, `modern`, `minimal`, `overlay`, `glass` | Model preset desain card |
+| `layout` | `grid`, `list`, `horizontal`, `custom` | Mode tata letak tampilan |
+| `columns` | `1` hingga `6` (Default: `3`) | Jumlah kolom dalam mode Grid |
+| `image_ratio` | `16:9`, `4:3`, `1:1`, `3:2`, `auto` | Rasio pemotongan gambar |
+| `image_hover_effect` | `zoom`, `brighten`, `none` | Animasi saat kursor diarahkan ke gambar |
+| `show_search_bar` | `true` \| `false` | Menampilkan kolom pencarian live |
+| `show_filter_tabs` | `true` \| `false` | Menampilkan tab filter kategori |
+| `show_read_time` | `true` \| `false` | Menampilkan estimasi waktu baca |
+| `show_social_share`| `true` \| `false` | Menampilkan ikon bagikan sosmed |
+| `pagination_type` | `none`, `load_more`, `numeric` | Mode navigasi halaman |
+| `items_per_page` | `1` hingga `30` (Default: `6`) | Jumlah artikel per halaman |
+| `card_bg` | Kode Warna Hex / RGBA | Warna latar belakang card |
+| `title_color` | Kode Warna Hex / RGBA | Warna teks judul artikel |
+| `button_bg` | Kode Warna Hex / RGBA | Warna latar belakang tombol Read More |
 
 ---
 
-## 🎨 Theme Override Support
+## 🎨 Dukungan Theme Override
 
-You can easily override the HTML card markup in your WordPress theme!
-Simply copy `templates/item.php` into your active theme directory:
-`wp-content/themes/YOUR-THEME/universal-post-rss-loop/item.php`
-
----
-
-## 🔄 Automatic WordPress Updates via GitHub
-
-This plugin features a **native automatic update mechanism** directly integrated with GitHub Releases.
-
-### How it works:
-1. Every time a new release tag (e.g. `v2.0.1`) is published on GitHub, WordPress will automatically detect the new version on your `wp-admin/plugins.php` page.
-2. An **"Update Available"** notice will appear in your WordPress admin plugin list.
-3. Simply click **"Update Now"** to instantly update the plugin directly from GitHub without needing manual ZIP uploads!
+Anda dapat mengkustomisasi struktur HTML card secara bebas pada tema WordPress Anda!
+Cukup salin file `templates/item.php` ke dalam folder tema Anda:
+`wp-content/themes/TEMA-ANDA/universal-post-rss-loop/item.php`
 
 ---
 
-## 👤 Author & Support
+## 👤 Informasi Penulis & Dukungan
 
-- **Author**: Mujaddid Halimurrosyid
-- **Website**: [https://ajidmujaddid.staff.telkomuniversity.ac.id/](https://ajidmujaddid.staff.telkomuniversity.ac.id/)
-- **GitHub Repository**: [https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin](https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin)
+- **Penulis**: Mujaddid Halimurrosyid
+- **Halaman Penulis**: [https://ajidmujaddid.staff.telkomuniversity.ac.id/](https://ajidmujaddid.staff.telkomuniversity.ac.id/)
+- **Repository GitHub**: [https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin](https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin)
