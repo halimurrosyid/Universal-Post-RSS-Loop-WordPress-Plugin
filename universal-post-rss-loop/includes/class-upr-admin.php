@@ -349,9 +349,9 @@ class UPR_Admin {
 		wp_send_json_success(
 			array(
 				'feed_url'      => $feed_url,
-				'http_status'   => $result['http_status'],
-				'content_type'  => $result['content_type'],
-				'feed_type'     => $result['feed_type'],
+				'http_status'   => isset( $result['http_status'] ) ? $result['http_status'] : 200,
+				'content_type'  => isset( $result['content_type'] ) ? $result['content_type'] : 'application/rss+xml',
+				'feed_type'     => isset( $result['feed_type'] ) ? $result['feed_type'] : 'RSS 2.0',
 				'item_count'    => count( $result['items'] ),
 				'has_image'     => $first_item && ! empty( $first_item['image'] ),
 				'first_image'   => $first_item ? $first_item['image'] : '',

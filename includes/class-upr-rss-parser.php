@@ -114,7 +114,16 @@ class UPR_RSS_Parser {
 			return new WP_Error( 'empty_body', __( 'Feed server returned an empty response body.', 'universal-post-rss-loop' ) );
 		}
 
-		return self::parse_xml( $body, $options );
+		$parsed = self::parse_xml( $body, $options );
+		if ( ! is_wp_error( $parsed ) && is_array( $parsed ) ) {
+			$parsed['http_status']  = 200;
+			$parsed['content_type'] = is_array( $response ) ? wp_remote_retrieve_header( $response, 'content-type' ) : 'application/rss+xml';
+			if ( empty( $parsed['content_type'] ) ) {
+				$parsed['content_type'] = 'application/rss+xml';
+			}
+		}
+
+		return $parsed;
 	}
 
 	/**
@@ -207,6 +216,7 @@ class UPR_RSS_Parser {
 		return array(
 			'source_name' => $source_name,
 			'source_url'  => $source_url,
+			'feed_type'   => 'RSS 2.0',
 			'items'       => $items,
 		);
 	}
@@ -270,6 +280,7 @@ class UPR_RSS_Parser {
 		return array(
 			'source_name' => $source_name,
 			'source_url'  => $source_url,
+			'feed_type'   => 'Atom Feed',
 			'items'       => $items,
 		);
 	}
