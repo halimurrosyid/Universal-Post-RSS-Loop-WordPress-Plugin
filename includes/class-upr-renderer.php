@@ -90,6 +90,10 @@ class UPR_Renderer {
 			'card_padding'        => 'normal', // 'compact', 'normal', 'spacious'
 			'title_font_size'     => 'medium', // 'small', 'medium', 'large', 'xlarge'
 			'excerpt_font_size'   => 'medium', // 'small', 'medium', 'large'
+			'custom_title_font_size' => '',
+			'custom_excerpt_font_size' => '',
+			'font_family'         => 'inherit', // 'inherit', 'inter', 'roboto', 'poppins', 'playfair', 'monospace', 'custom'
+			'custom_font_family'  => '',
 			'image_hover_effect'  => 'zoom', // 'zoom', 'brighten', 'none'
 			'badge_position'      => 'auto', // 'auto', 'overlay', 'inline'
 

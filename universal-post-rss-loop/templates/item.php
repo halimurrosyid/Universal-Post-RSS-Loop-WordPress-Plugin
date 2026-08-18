@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Card Item Template (v2.0.0)
+ * Card Item Template (v2.0.7)
  *
  * Available variables:
  * @var UPR_Item $item Normalized item object.
@@ -58,8 +58,28 @@ if ( $show_read_time ) {
 	$read_time_text = sprintf( __( '⏱️ %d min read', 'universal-post-rss-loop' ), $minutes );
 }
 
-// Dynamic CSS Custom Properties for Colors
+// Font Family & Typography Controls
+$font_family_preset = ! empty( $settings['font_family'] ) ? $settings['font_family'] : 'inherit';
+$custom_font_family = ! empty( $settings['custom_font_family'] ) ? trim( $settings['custom_font_family'] ) : '';
+
+$font_family_css = '';
+if ( $font_family_preset === 'inter' ) {
+	$font_family_css = "'Inter', system-ui, -apple-system, sans-serif";
+} elseif ( $font_family_preset === 'roboto' ) {
+	$font_family_css = "'Roboto', system-ui, -apple-system, sans-serif";
+} elseif ( $font_family_preset === 'poppins' ) {
+	$font_family_css = "'Poppins', system-ui, -apple-system, sans-serif";
+} elseif ( $font_family_preset === 'playfair' ) {
+	$font_family_css = "'Playfair Display', Georgia, serif";
+} elseif ( $font_family_preset === 'monospace' ) {
+	$font_family_css = "'Fira Code', Consolas, monospace";
+} elseif ( $font_family_preset === 'custom' && ! empty( $custom_font_family ) ) {
+	$font_family_css = $custom_font_family;
+}
+
+// Dynamic CSS Custom Properties & Styles
 $inline_styles = array();
+if ( ! empty( $font_family_css ) )                { $inline_styles[] = 'font-family:' . esc_attr( $font_family_css ); }
 if ( ! empty( $settings['card_bg'] ) )           { $inline_styles[] = '--upr-card-bg:' . esc_attr( $settings['card_bg'] ); }
 if ( ! empty( $settings['border_color'] ) )       { $inline_styles[] = '--upr-border-color:' . esc_attr( $settings['border_color'] ); }
 if ( ! empty( $settings['title_color'] ) )        { $inline_styles[] = '--upr-title-color:' . esc_attr( $settings['title_color'] ); }
@@ -73,6 +93,13 @@ if ( ! empty( $settings['button_color'] ) )       { $inline_styles[] = '--upr-bt
 if ( ! empty( $settings['button_hover_bg'] ) )    { $inline_styles[] = '--upr-btn-hover-bg:' . esc_attr( $settings['button_hover_bg'] ); }
 
 $style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( ';', $inline_styles ) ) . '"' : '';
+
+// Custom Font Sizes (Overrides preset if provided)
+$custom_title_size   = ! empty( $settings['custom_title_font_size'] ) ? esc_attr( trim( $settings['custom_title_font_size'] ) ) : '';
+$custom_excerpt_size = ! empty( $settings['custom_excerpt_font_size'] ) ? esc_attr( trim( $settings['custom_excerpt_font_size'] ) ) : '';
+
+$title_style_attr   = ! empty( $custom_title_size ) ? ' style="font-size:' . $custom_title_size . ';"' : '';
+$excerpt_style_attr = ! empty( $custom_excerpt_size ) ? ' style="font-size:' . $custom_excerpt_size . ';"' : '';
 
 // Truncation logic
 $title_text = $item->title;
@@ -167,7 +194,7 @@ $encoded_title = rawurlencode( $item->title );
 		<?php endif; ?>
 
 		<?php if ( $show_title ) : ?>
-			<<?php echo esc_html( $title_tag ); ?> class="upr-item-title upr-title-font-<?php echo esc_attr( $title_font_size ); ?>">
+			<<?php echo esc_html( $title_tag ); ?> class="upr-item-title upr-title-font-<?php echo esc_attr( $title_font_size ); ?>"<?php echo $title_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<?php if ( in_array( $link_behavior, array( 'title', 'all', 'card' ), true ) ) : ?>
 					<a href="<?php echo esc_url( $item->url ); ?>"<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( $title_text ); ?></a>
 				<?php else : ?>
@@ -177,7 +204,7 @@ $encoded_title = rawurlencode( $item->title );
 		<?php endif; ?>
 
 		<?php if ( $show_excerpt ) : ?>
-			<div class="upr-item-excerpt upr-excerpt-font-<?php echo esc_attr( $excerpt_font_size ); ?>">
+			<div class="upr-item-excerpt upr-excerpt-font-<?php echo esc_attr( $excerpt_font_size ); ?>"<?php echo $excerpt_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<p><?php echo esc_html( $excerpt_text ); ?></p>
 			</div>
 		<?php endif; ?>

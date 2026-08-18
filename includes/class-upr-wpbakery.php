@@ -189,6 +189,30 @@ class UPR_WPBakery {
 					// Typography Tab
 					array(
 						'type'        => 'dropdown',
+						'heading'     => __( 'Font Family', 'universal-post-rss-loop' ),
+						'param_name'  => 'font_family',
+						'value'       => array(
+							__( 'Inherit (WordPress Theme Font)', 'universal-post-rss-loop' ) => 'inherit',
+							'Inter (Sans-Serif)'       => 'inter',
+							'Roboto (Sans-Serif)'      => 'roboto',
+							'Poppins (Sans-Serif)'     => 'poppins',
+							'Playfair Display (Serif)' => 'playfair',
+							'Monospace (Code Style)'   => 'monospace',
+							'Custom Font Family'       => 'custom',
+						),
+						'std'         => 'inherit',
+						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
+					),
+					array(
+						'type'        => 'textfield',
+						'heading'     => __( 'Custom Font Family (e.g. "Open Sans", sans-serif)', 'universal-post-rss-loop' ),
+						'param_name'  => 'custom_font_family',
+						'value'       => '',
+						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
+						'dependency'  => array( 'element' => 'font_family', 'value' => array( 'custom' ) ),
+					),
+					array(
+						'type'        => 'dropdown',
 						'heading'     => __( 'Title Font Size', 'universal-post-rss-loop' ),
 						'param_name'  => 'title_font_size',
 						'value'       => array(
@@ -198,6 +222,14 @@ class UPR_WPBakery {
 							'Extra Large (26px)' => 'xlarge',
 						),
 						'std'         => 'medium',
+						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
+					),
+					array(
+						'type'        => 'textfield',
+						'heading'     => __( 'Custom Title Font Size (e.g. 17px, 1.2rem)', 'universal-post-rss-loop' ),
+						'param_name'  => 'custom_title_font_size',
+						'value'       => '',
+						'description' => __( 'Leave empty to use Title Font Size dropdown preset above.', 'universal-post-rss-loop' ),
 						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
 					),
 					array(
@@ -217,6 +249,14 @@ class UPR_WPBakery {
 							'Large (15px)'  => 'large',
 						),
 						'std'         => 'medium',
+						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
+					),
+					array(
+						'type'        => 'textfield',
+						'heading'     => __( 'Custom Excerpt Font Size (e.g. 14px, 0.9rem)', 'universal-post-rss-loop' ),
+						'param_name'  => 'custom_excerpt_font_size',
+						'value'       => '',
+						'description' => __( 'Leave empty to use Excerpt Font Size dropdown preset above.', 'universal-post-rss-loop' ),
 						'group'       => __( 'Typography', 'universal-post-rss-loop' ),
 					),
 					array(

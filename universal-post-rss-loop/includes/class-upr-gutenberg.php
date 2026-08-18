@@ -123,6 +123,10 @@ class UPR_Gutenberg {
 					'card_padding'        => array( 'type' => 'string', 'default' => 'normal' ),
 					'title_font_size'     => array( 'type' => 'string', 'default' => 'medium' ),
 					'excerpt_font_size'   => array( 'type' => 'string', 'default' => 'medium' ),
+					'custom_title_font_size' => array( 'type' => 'string', 'default' => '' ),
+					'custom_excerpt_font_size' => array( 'type' => 'string', 'default' => '' ),
+					'font_family'         => array( 'type' => 'string', 'default' => 'inherit' ),
+					'custom_font_family'  => array( 'type' => 'string', 'default' => '' ),
 					'image_hover_effect'  => array( 'type' => 'string', 'default' => 'zoom' ),
 					'badge_position'      => array( 'type' => 'string', 'default' => 'auto' ),
 

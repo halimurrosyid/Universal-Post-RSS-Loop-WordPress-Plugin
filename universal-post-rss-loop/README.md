@@ -81,6 +81,12 @@
 | `show_filter_tabs` | `true` \| `false` | Menampilkan tab filter kategori |
 | `show_read_time` | `true` \| `false` | Menampilkan estimasi waktu baca |
 | `show_social_share`| `true` \| `false` | Menampilkan ikon bagikan sosmed |
+| `title_font_size` | `small`, `medium`, `large`, `xlarge` | Ukuran font preset judul artikel |
+| `custom_title_font_size` | String CSS (misal: `18px`, `1.2rem`) | Ukuran kustom font judul |
+| `excerpt_font_size` | `small`, `medium`, `large` | Ukuran font preset ringkasan |
+| `custom_excerpt_font_size` | String CSS (misal: `14px`, `0.9rem`) | Ukuran kustom font ringkasan |
+| `font_family` | `inherit`, `inter`, `roboto`, `poppins`, `playfair`, `monospace`, `custom` | Pilihan jenis font tipografi |
+| `custom_font_family` | String CSS (misal: `'Montserrat', sans-serif`) | Jenis font kustom |
 | `pagination_type` | `none`, `load_more`, `numeric` | Mode navigasi halaman |
 | `items_per_page` | `1` hingga `30` (Default: `6`) | Jumlah artikel per halaman |
 | `card_bg` | Kode Warna Hex / RGBA | Warna latar belakang card |
