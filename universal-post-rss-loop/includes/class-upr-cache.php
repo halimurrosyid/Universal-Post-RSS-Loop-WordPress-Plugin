@@ -60,6 +60,7 @@ class UPR_Cache {
 			$wpdb->esc_like( $timeout_prefix ) . '%'
 		);
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$options = $wpdb->get_col( $sql );
 		if ( ! empty( $options ) ) {
 			foreach ( $options as $option_name ) {

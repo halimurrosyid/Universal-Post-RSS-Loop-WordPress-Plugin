@@ -33,7 +33,7 @@ $show_meta     = ( ! empty( $settings['show_date'] ) && ! empty( $item->date ) )
 
 $show_btn      = ! empty( $settings['show_read_more'] );
 
-$title_tag          = ! empty( $settings['title_tag'] ) ? esc_attr( $settings['title_tag'] ) : 'h3';
+$title_tag          = ! empty( $settings['title_tag'] ) ? tag_escape( $settings['title_tag'] ) : 'h3';
 $image_ratio        = ! empty( $settings['image_ratio'] ) ? esc_attr( $settings['image_ratio'] ) : '16:9';
 $object_fit         = ! empty( $settings['object_fit'] ) ? esc_attr( $settings['object_fit'] ) : 'cover';
 
@@ -72,7 +72,7 @@ if ( ! empty( $settings['button_bg'] ) )          { $inline_styles[] = '--upr-bt
 if ( ! empty( $settings['button_color'] ) )       { $inline_styles[] = '--upr-btn-color:' . esc_attr( $settings['button_color'] ); }
 if ( ! empty( $settings['button_hover_bg'] ) )    { $inline_styles[] = '--upr-btn-hover-bg:' . esc_attr( $settings['button_hover_bg'] ); }
 
-$style_attr = ! empty( $inline_styles ) ? ' style="' . implode( ';', $inline_styles ) . '"' : '';
+$style_attr = ! empty( $inline_styles ) ? ' style="' . esc_attr( implode( ';', $inline_styles ) ) . '"' : '';
 
 // Truncation logic
 $title_text = $item->title;
@@ -110,12 +110,12 @@ $encoded_url   = rawurlencode( $item->url );
 $encoded_title = rawurlencode( $item->title );
 ?>
 
-<article class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"<?php echo $style_attr; ?> <?php echo $is_card_link ? 'onclick="window.open(\'' . esc_url( $item->url ) . '\', \'' . ( ! empty( $link_target ) ? '_blank' : '_self' ) . '\')"' : ''; ?>>
+<article class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> <?php echo $is_card_link ? 'onclick="window.open(\'' . esc_url( $item->url ) . '\', \'' . ( ! empty( $link_target ) ? '_blank' : '_self' ) . '\')"' : ''; ?>>
 	
 	<?php if ( $show_image ) : ?>
 		<div class="upr-item-image <?php echo esc_attr( $ratio_class ); ?>">
 			<?php if ( in_array( $link_behavior, array( 'image', 'all' ), true ) ) : ?>
-				<a href="<?php echo esc_url( $item->url ); ?>"<?php echo $link_target; ?> aria-label="<?php echo esc_attr( $item->title ); ?>">
+				<a href="<?php echo esc_url( $item->url ); ?>"<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> aria-label="<?php echo esc_attr( $item->title ); ?>">
 					<img src="<?php echo esc_url( $item->image ); ?>" alt="<?php echo esc_attr( $item->title ); ?>" style="object-fit: <?php echo esc_attr( $object_fit ); ?>;" loading="lazy" />
 				</a>
 			<?php else : ?>
@@ -141,7 +141,7 @@ $encoded_title = rawurlencode( $item->title );
 				<?php if ( ( ! $show_badge_overlay || ! $show_image ) && ! empty( $settings['show_source'] ) && ! empty( $item->source_name ) ) : ?>
 					<span class="upr-meta-source">
 						<?php if ( ! empty( $item->source_url ) ) : ?>
-							<a href="<?php echo esc_url( $item->source_url ); ?>"<?php echo $link_target; ?>><?php echo esc_html( $item->source_name ); ?></a>
+							<a href="<?php echo esc_url( $item->source_url ); ?>"<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( $item->source_name ); ?></a>
 						<?php else : ?>
 							<?php echo esc_html( $item->source_name ); ?>
 						<?php endif; ?>
@@ -167,13 +167,13 @@ $encoded_title = rawurlencode( $item->title );
 		<?php endif; ?>
 
 		<?php if ( $show_title ) : ?>
-			<<?php echo $title_tag; ?> class="upr-item-title upr-title-font-<?php echo esc_attr( $title_font_size ); ?>">
+			<<?php echo esc_html( $title_tag ); ?> class="upr-item-title upr-title-font-<?php echo esc_attr( $title_font_size ); ?>">
 				<?php if ( in_array( $link_behavior, array( 'title', 'all', 'card' ), true ) ) : ?>
-					<a href="<?php echo esc_url( $item->url ); ?>"<?php echo $link_target; ?>><?php echo esc_html( $title_text ); ?></a>
+					<a href="<?php echo esc_url( $item->url ); ?>"<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( $title_text ); ?></a>
 				<?php else : ?>
 					<?php echo esc_html( $title_text ); ?>
 				<?php endif; ?>
-			</<?php echo $title_tag; ?>>
+			</<?php echo esc_html( $title_tag ); ?>>
 		<?php endif; ?>
 
 		<?php if ( $show_excerpt ) : ?>
@@ -186,7 +186,7 @@ $encoded_title = rawurlencode( $item->title );
 			<div class="upr-item-footer">
 				<?php if ( $show_btn ) : ?>
 					<div class="upr-item-action">
-						<a href="<?php echo esc_url( $item->url ); ?>" class="upr-read-more upr-btn-<?php echo esc_attr( $button_style ); ?> upr-btn-width-<?php echo esc_attr( $button_width ); ?>"<?php echo $link_target; ?>>
+						<a href="<?php echo esc_url( $item->url ); ?>" class="upr-read-more upr-btn-<?php echo esc_attr( $button_style ); ?> upr-btn-width-<?php echo esc_attr( $button_width ); ?>"<?php echo $link_target; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 							<?php echo esc_html( ! empty( $settings['read_more_text'] ) ? $settings['read_more_text'] : __( 'Read More', 'universal-post-rss-loop' ) ); ?>
 						</a>
 					</div>
@@ -194,10 +194,10 @@ $encoded_title = rawurlencode( $item->title );
 
 				<?php if ( $show_social ) : ?>
 					<div class="upr-social-share-wrap">
-						<a href="https://api.whatsapp.com/send?text=<?php echo $encoded_title; ?>%20<?php echo $encoded_url; ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-wa" title="Share on WhatsApp">💬</a>
-						<a href="https://twitter.com/intent/tweet?text=<?php echo $encoded_title; ?>&url=<?php echo $encoded_url; ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-tw" title="Share on X">🐦</a>
-						<a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $encoded_url; ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-fb" title="Share on Facebook">📘</a>
-						<a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $encoded_url; ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-li" title="Share on LinkedIn">💼</a>
+						<a href="https://api.whatsapp.com/send?text=<?php echo esc_attr( $encoded_title ); ?>%20<?php echo esc_attr( $encoded_url ); ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-wa" title="Share on WhatsApp">💬</a>
+						<a href="https://twitter.com/intent/tweet?text=<?php echo esc_attr( $encoded_title ); ?>&url=<?php echo esc_attr( $encoded_url ); ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-tw" title="Share on X">🐦</a>
+						<a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo esc_attr( $encoded_url ); ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-fb" title="Share on Facebook">📘</a>
+						<a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo esc_attr( $encoded_url ); ?>" target="_blank" rel="noopener" class="upr-social-btn upr-share-li" title="Share on LinkedIn">💼</a>
 					</div>
 				<?php endif; ?>
 			</div>

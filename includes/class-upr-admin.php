@@ -241,9 +241,9 @@ class UPR_Admin {
 				<?php elseif ( $active_tab === 'advanced' ) : ?>
 					<h3><?php esc_html_e( 'System Debug Information', 'universal-post-rss-loop' ); ?></h3>
 					<table class="widefat striped">
-						<tr><td><strong>Plugin Version</strong></td><td><?php echo UPR_VERSION; ?></td></tr>
-						<tr><td><strong>PHP Version</strong></td><td><?php echo PHP_VERSION; ?></td></tr>
-						<tr><td><strong>WordPress Version</strong></td><td><?php echo get_bloginfo( 'version' ); ?></td></tr>
+						<tr><td><strong>Plugin Version</strong></td><td><?php echo esc_html( UPR_VERSION ); ?></td></tr>
+						<tr><td><strong>PHP Version</strong></td><td><?php echo esc_html( PHP_VERSION ); ?></td></tr>
+						<tr><td><strong>WordPress Version</strong></td><td><?php echo esc_html( get_bloginfo( 'version' ) ); ?></td></tr>
 						<tr><td><strong>SimpleXML Available</strong></td><td><?php echo class_exists( 'SimpleXMLElement' ) ? 'Yes (Active)' : 'No (Required for RSS)'; ?></td></tr>
 						<tr><td><strong>cURL Installed</strong></td><td><?php echo function_exists( 'curl_init' ) ? 'Yes (Active)' : 'No'; ?></td></tr>
 						<tr><td><strong>WPBakery Detected</strong></td><td><?php echo function_exists( 'vc_map' ) ? 'Yes' : 'No'; ?></td></tr>
@@ -392,7 +392,7 @@ class UPR_Admin {
 		<div id="upr-plugin-details-modal" style="display:none;">
 			<div class="upr-modal-container">
 				<div class="upr-modal-header">
-					<h2>Universal Post & RSS Loop <span class="upr-modal-version">v<?php echo UPR_VERSION; ?></span></h2>
+					<h2>Universal Post & RSS Loop <span class="upr-modal-version">v<?php echo esc_html( UPR_VERSION ); ?></span></h2>
 					<p class="upr-modal-author">
 						<?php esc_html_e( 'By', 'universal-post-rss-loop' ); ?> 
 						<a href="https://ajidmujaddid.staff.telkomuniversity.ac.id/" target="_blank" rel="noopener">Mujaddid Halimurrosyid</a> 

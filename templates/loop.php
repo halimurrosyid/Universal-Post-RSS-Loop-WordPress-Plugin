@@ -74,9 +74,9 @@ if ( $show_filter && ! empty( $items ) ) {
 
 			echo '<div class="upr-item-wrapper' . esc_attr( $hidden_class ) . '" data-category="' . esc_attr( $cat_slug ) . '" data-search="' . esc_attr( mb_strtolower( $item->title . ' ' . $item->excerpt, 'UTF-8' ) ) . '">';
 			if ( $layout === 'custom' && ! empty( $custom_html ) ) {
-				echo UPR_Template::render_custom_html( $custom_html, $item, $settings );
+				echo UPR_Template::render_custom_html( $custom_html, $item, $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			} else {
-				echo UPR_Template::render(
+				echo UPR_Template::render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					'item.php',
 					array(
 						'item'     => $item,
