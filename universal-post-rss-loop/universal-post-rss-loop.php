@@ -3,7 +3,7 @@
  * Plugin Name:       Universal Post & RSS Loop
  * Plugin URI:        https://github.com/halimurrosyid/Universal-Post-RSS-Loop-WordPress-Plugin
  * Description:       Unified post grid/list display for WordPress Posts and External RSS Feeds using the exact same card design.
- * Version:           2.0.9
+ * Version:           2.1.0
  * Author:            Mujaddid Halimurrosyid
  * Author URI:        https://ajidmujaddid.staff.telkomuniversity.ac.id/
  * Text Domain:       universal-post-rss-loop
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'UPR_VERSION', '2.0.9' );
+define( 'UPR_VERSION', '2.1.0' );
 define( 'UPR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'UPR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'UPR_PLUGIN_FILE', __FILE__ );

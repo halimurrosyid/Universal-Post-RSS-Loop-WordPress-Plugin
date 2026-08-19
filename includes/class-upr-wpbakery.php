@@ -113,7 +113,7 @@ class UPR_WPBakery {
 						'param_name'  => 'author',
 						'value'       => '',
 						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
-						'group'       => __( 'General & Source', 'universal-post-rss-loop' ),
+						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
 						'type'        => 'textfield',
@@ -122,7 +122,7 @@ class UPR_WPBakery {
 						'value'       => '',
 						'description' => __( 'Masukkan ID postingan yang ingin disembunyikan, dipisahkan koma (misal: 15, 42, 108).', 'universal-post-rss-loop' ),
 						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
-						'group'       => __( 'General & Source', 'universal-post-rss-loop' ),
+						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
 						'type'        => 'checkbox',
@@ -130,7 +130,7 @@ class UPR_WPBakery {
 						'param_name'  => 'exclude_current',
 						'value'       => array( __( 'Ya, sembunyikan artikel halaman ini (Cocok untuk Related Posts)', 'universal-post-rss-loop' ) => 'true' ),
 						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
-						'group'       => __( 'General & Source', 'universal-post-rss-loop' ),
+						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
 						'type'        => 'textfield',
