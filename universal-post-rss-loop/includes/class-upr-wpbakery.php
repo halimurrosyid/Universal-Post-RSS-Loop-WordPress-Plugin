@@ -121,7 +121,6 @@ class UPR_WPBakery {
 						'param_name'  => 'exclude',
 						'value'       => '',
 						'description' => __( 'Masukkan ID postingan yang ingin disembunyikan, dipisahkan koma (misal: 15, 42, 108).', 'universal-post-rss-loop' ),
-						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
@@ -129,7 +128,6 @@ class UPR_WPBakery {
 						'heading'     => __( 'Sembunyikan Artikel Yang Sedang Dibaca (Exclude Current Post)', 'universal-post-rss-loop' ),
 						'param_name'  => 'exclude_current',
 						'value'       => array( __( 'Ya, sembunyikan artikel halaman ini (Cocok untuk Related Posts)', 'universal-post-rss-loop' ) => 'true' ),
-						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
