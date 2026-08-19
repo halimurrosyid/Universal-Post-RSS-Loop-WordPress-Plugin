@@ -139,6 +139,9 @@ class UPR_Renderer {
 		if ( ! empty( $settings['exclude_post_select'] ) ) {
 			$settings['exclude'] = trim( $settings['exclude'] . ',' . $settings['exclude_post_select'], ',' );
 		}
+		if ( ! empty( $settings['rss_exclude'] ) ) {
+			$settings['exclude'] = trim( $settings['exclude'] . ',' . $settings['rss_exclude'], ',' );
+		}
 
 		// Instantiate Data Provider based on Source Switch
 		if ( $settings['source'] === 'rss' ) {

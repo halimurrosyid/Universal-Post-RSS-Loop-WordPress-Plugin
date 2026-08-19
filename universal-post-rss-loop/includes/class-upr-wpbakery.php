@@ -117,11 +117,12 @@ class UPR_WPBakery {
 					),
 					array(
 						'type'        => 'dropdown',
-						'heading'     => __( 'Sembunyikan Artikel (Pilih Judul Artikel)', 'universal-post-rss-loop' ),
+						'heading'     => __( 'Sembunyikan Artikel WP (Pilih Judul Artikel)', 'universal-post-rss-loop' ),
 						'param_name'  => 'exclude_post_select',
 						'value'       => array_flip( UPR_Post_Provider::get_posts_dropdown_list() ),
 						'std'         => '',
-						'description' => __( 'Pilih judul artikel dari daftar ini untuk disembunyikan dari grid.', 'universal-post-rss-loop' ),
+						'description' => __( 'Pilih judul artikel postingan website ini yang ingin disembunyikan.', 'universal-post-rss-loop' ),
+						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
@@ -129,7 +130,8 @@ class UPR_WPBakery {
 						'heading'     => __( 'Exclude Post IDs (ID Post Manual / Tambahan)', 'universal-post-rss-loop' ),
 						'param_name'  => 'exclude',
 						'value'       => '',
-						'description' => __( 'Tersisi otomatis dari pilihan judul di atas, atau masukkan ID postingan dipisahkan koma (misal: 15, 42).', 'universal-post-rss-loop' ),
+						'description' => __( 'Masukkan ID postingan dipisahkan koma (misal: 15, 42).', 'universal-post-rss-loop' ),
+						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
@@ -137,6 +139,16 @@ class UPR_WPBakery {
 						'heading'     => __( 'Sembunyikan Artikel Yang Sedang Dibaca (Exclude Current Post)', 'universal-post-rss-loop' ),
 						'param_name'  => 'exclude_current',
 						'value'       => array( __( 'Ya, sembunyikan artikel halaman ini (Cocok untuk Related Posts)', 'universal-post-rss-loop' ) => 'true' ),
+						'dependency'  => array( 'element' => 'source', 'value' => array( 'posts' ) ),
+						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
+					),
+					array(
+						'type'        => 'textfield',
+						'heading'     => __( 'Sembunyikan Berita RSS (Tulis Judul / Kata Kunci)', 'universal-post-rss-loop' ),
+						'param_name'  => 'rss_exclude',
+						'value'       => '',
+						'description' => __( 'Tuliskan judul atau potongan kata kunci dari berita RSS yang ingin disembunyikan (misal: "Security Awareness", "Maintenance", dipisahkan koma).', 'universal-post-rss-loop' ),
+						'dependency'  => array( 'element' => 'source', 'value' => array( 'rss' ) ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(

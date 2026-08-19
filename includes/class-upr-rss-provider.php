@@ -189,6 +189,29 @@ class UPR_RSS_Provider extends Abstract_UPR_Provider {
 			}
 		);
 
+		// Exclude filtering (Filter out RSS items by Title/Keyword)
+		if ( ! empty( $args['exclude'] ) ) {
+			$exclude_terms = is_array( $args['exclude'] ) ? $args['exclude'] : explode( ',', $args['exclude'] );
+			$exclude_terms = array_filter( array_map( 'trim', $exclude_terms ) );
+
+			if ( ! empty( $exclude_terms ) ) {
+				$raw_items = array_filter(
+					$raw_items,
+					function( $item ) use ( $exclude_terms ) {
+						foreach ( $exclude_terms as $term ) {
+							if ( empty( $term ) ) {
+								continue;
+							}
+							if ( false !== mb_stripos( $item['title'], $term ) || false !== mb_stripos( $item['url'], $term ) ) {
+								return false;
+							}
+						}
+						return true;
+					}
+				);
+			}
+		}
+
 		$limit  = intval( $args['limit'] );
 		$sliced = array_slice( $raw_items, 0, $limit );
 
