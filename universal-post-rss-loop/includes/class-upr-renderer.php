@@ -136,6 +136,10 @@ class UPR_Renderer {
 		$settings['layout']             = sanitize_key( $settings['layout'] );
 		$settings['title_tag']          = in_array( strtolower( $settings['title_tag'] ), array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'p' ), true ) ? strtolower( $settings['title_tag'] ) : 'h3';
 
+		if ( ! empty( $settings['exclude_post_select'] ) ) {
+			$settings['exclude'] = trim( $settings['exclude'] . ',' . $settings['exclude_post_select'], ',' );
+		}
+
 		// Instantiate Data Provider based on Source Switch
 		if ( $settings['source'] === 'rss' ) {
 			$provider = new UPR_RSS_Provider();

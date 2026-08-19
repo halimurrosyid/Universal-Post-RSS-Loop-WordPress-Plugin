@@ -164,11 +164,42 @@ class UPR_Post_Provider extends Abstract_UPR_Provider {
 	 */
 	public static function get_categories_list() {
 		$categories = get_categories( array( 'hide_empty' => false ) );
-		$options    = array( '' => __( '-- All Categories --', 'universal-post-rss-loop' ) );
+		$options    = array(
+			'' => __( 'All Categories', 'universal-post-rss-loop' ),
+		);
 
 		if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
 			foreach ( $categories as $cat ) {
-				$options[ $cat->slug ] = $cat->name . ' (' . $cat->slug . ')';
+				$options[ $cat->slug ] = $cat->name;
+			}
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Get array of published posts for title dropdown selection
+	 *
+	 * @return array Array of published posts (ID => Title)
+	 */
+	public static function get_posts_dropdown_list() {
+		$posts = get_posts(
+			array(
+				'post_type'      => 'any',
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+			)
+		);
+
+		$options = array(
+			'' => __( '-- Select Article to Hide --', 'universal-post-rss-loop' ),
+		);
+
+		if ( ! empty( $posts ) && ! is_wp_error( $posts ) ) {
+			foreach ( $posts as $p ) {
+				$options[ $p->ID ] = esc_html( $p->post_title );
 			}
 		}
 

@@ -116,11 +116,20 @@ class UPR_WPBakery {
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
+						'type'        => 'dropdown',
+						'heading'     => __( 'Sembunyikan Artikel (Pilih Judul Artikel)', 'universal-post-rss-loop' ),
+						'param_name'  => 'exclude_post_select',
+						'value'       => array_flip( UPR_Post_Provider::get_posts_dropdown_list() ),
+						'std'         => '',
+						'description' => __( 'Pilih judul artikel dari daftar ini untuk disembunyikan dari grid.', 'universal-post-rss-loop' ),
+						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
+					),
+					array(
 						'type'        => 'textfield',
-						'heading'     => __( 'Exclude Post IDs (Sembunyikan Artikel)', 'universal-post-rss-loop' ),
+						'heading'     => __( 'Exclude Post IDs (ID Post Manual / Tambahan)', 'universal-post-rss-loop' ),
 						'param_name'  => 'exclude',
 						'value'       => '',
-						'description' => __( 'Masukkan ID postingan yang ingin disembunyikan, dipisahkan koma (misal: 15, 42, 108).', 'universal-post-rss-loop' ),
+						'description' => __( 'Tersisi otomatis dari pilihan judul di atas, atau masukkan ID postingan dipisahkan koma (misal: 15, 42).', 'universal-post-rss-loop' ),
 						'group'       => __( 'Data Source', 'universal-post-rss-loop' ),
 					),
 					array(
