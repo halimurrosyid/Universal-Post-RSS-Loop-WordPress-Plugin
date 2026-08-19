@@ -71,6 +71,8 @@ class UPR_Gutenberg {
 					'post_type'           => array( 'type' => 'string', 'default' => 'post' ),
 					'category'            => array( 'type' => 'string', 'default' => '' ),
 					'author'              => array( 'type' => 'string', 'default' => '' ),
+					'exclude'             => array( 'type' => 'string', 'default' => '' ),
+					'exclude_current'     => array( 'type' => 'boolean', 'default' => false ),
 					'limit'               => array( 'type' => 'number', 'default' => 6 ),
 					'order'               => array( 'type' => 'string', 'default' => 'DESC' ),
 					'orderby'             => array( 'type' => 'string', 'default' => 'date' ),

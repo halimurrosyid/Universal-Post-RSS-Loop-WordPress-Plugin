@@ -31,6 +31,7 @@ class UPR_Renderer {
 			'offset'              => 0,
 			'include'             => '',
 			'exclude'             => '',
+			'exclude_current'     => false,
 
 			// RSS Feed settings
 			'feed_url'            => '',

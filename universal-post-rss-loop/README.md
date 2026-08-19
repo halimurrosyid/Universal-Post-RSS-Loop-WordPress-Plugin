@@ -69,6 +69,8 @@
 | `source` | `posts` \| `rss` (Default: `posts`) | Pilihan sumber data (WP Posts atau RSS Feed) |
 | `post_type` | `post`, `page`, dsb. (Default: `post`) | Tipe postingan WordPress |
 | `category` | Slug Kategori | Filter postingan berdasarkan slug kategori |
+| `exclude` | ID dipisah koma (misal `15, 42`) | Menyembunyikan artikel postingan tertentu |
+| `exclude_current` | `true` \| `false` | Menyembunyikan artikel yang sedang dibaca (Related Posts) |
 | `feed_url` | URL RSS Feed | URL sumber RSS Feed tunggal |
 | `feeds` | URL dipisah koma/baris | Penggabung beberapa URL RSS Feed |
 | `limit` | `1` hingga `50` (Default: `6`) | Total jumlah artikel yang ditampilkan |

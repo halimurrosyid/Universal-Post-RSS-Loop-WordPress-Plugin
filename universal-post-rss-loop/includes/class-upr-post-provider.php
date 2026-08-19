@@ -70,10 +70,22 @@ class UPR_Post_Provider extends Abstract_UPR_Provider {
 			$query_args['post__in'] = array_map( 'intval', array_filter( $inc_ids ) );
 		}
 
-		// Exclude filter
+		// Exclude filter & Exclude Current Post
+		$exclude_ids = array();
 		if ( ! empty( $parsed_args['exclude'] ) ) {
 			$exc_ids = is_array( $parsed_args['exclude'] ) ? $parsed_args['exclude'] : explode( ',', $parsed_args['exclude'] );
-			$query_args['post__not_in'] = array_map( 'intval', array_filter( $exc_ids ) );
+			$exclude_ids = array_map( 'intval', array_filter( array_map( 'trim', $exc_ids ) ) );
+		}
+
+		if ( ! empty( $parsed_args['exclude_current'] ) ) {
+			$current_id = get_the_ID();
+			if ( $current_id ) {
+				$exclude_ids[] = intval( $current_id );
+			}
+		}
+
+		if ( ! empty( $exclude_ids ) ) {
+			$query_args['post__not_in'] = array_unique( $exclude_ids );
 		}
 
 		$query = new WP_Query( $query_args );
